@@ -1,0 +1,17 @@
+# Install a CUDA-enabled PyTorch wheel separately, using the official selector:
+# https://pytorch.org/get-started/locally/
+#
+# The current local machine was checked with Python 3.12 and an NVIDIA driver
+# reporting CUDA 12.7. PyTorch publishes Windows/Linux CUDA wheels such as
+# cu126 and cu128 in its official previous-version matrix.
+
+transformers>=4.36,<5
+einops>=0.7
+numpy>=1.26,<3
+pandas>=2.2,<3
+scikit-learn>=1.5,<2
+scipy>=1.13,<2
+statsmodels>=0.14,<1
+matplotlib>=3.9,<4
+tqdm>=4.66,<5
+ccxt
