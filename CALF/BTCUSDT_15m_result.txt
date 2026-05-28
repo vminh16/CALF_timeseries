@@ -1,0 +1,24 @@
+BTCUSDT_96_16_ori
+mae:0.16842 , mae_std:0.000415 , mse:0.26695 , mse_std:0.000104
+BTCUSDT_96_16_dropAttn_keepWE
+mae:0.16959 , mae_std:0.000344 , mse:0.26188 , mse_std:0.000509
+BTCUSDT_96_16_llm_to_attn
+mae:0.17056 , mae_std:0.000284 , mse:0.26546 , mse_std:0.001537
+BTCUSDT_96_16_llm_to_trsf
+mae:0.17067 , mae_std:0.00097 , mse:0.26732 , mse_std:0.002104
+BTCUSDT_96_32_ori
+mae:0.18722 , mae_std:0.002459 , mse:0.29046 , mse_std:0.003274
+BTCUSDT_96_32_dropAttn_keepWE
+mae:0.18644 , mae_std:0.001557 , mse:0.28703 , mse_std:0.002701
+BTCUSDT_96_32_llm_to_attn
+mae:0.1865 , mae_std:0.000162 , mse:0.28817 , mse_std:0.000123
+BTCUSDT_96_32_llm_to_trsf
+mae:0.1866 , mae_std:0.000783 , mse:0.28873 , mse_std:0.000664
+BTCUSDT_96_96_ori
+mae:0.21606 , mae_std:0.000641 , mse:0.32962 , mse_std:0.001445
+BTCUSDT_96_96_dropAttn_keepWE
+mae:0.21529 , mae_std:0.000337 , mse:0.32634 , mse_std:0.000307
+BTCUSDT_96_96_llm_to_attn
+mae:0.21689 , mae_std:0.000663 , mse:0.32765 , mse_std:0.000207
+BTCUSDT_96_96_llm_to_trsf
+mae:0.21467 , mae_std:0.000354 , mse:0.32785 , mse_std:0.000135
