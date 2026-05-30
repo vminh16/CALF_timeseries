@@ -181,9 +181,51 @@ class Exp_Long_Term_Forecast(Exp_Basic):
 
     def test(self, setting, test=0 , log_fine_name = '' ,  ii = -1 ):
         test_data, test_loader = self._get_data(flag='test')
-        # if test:
-        #     print('loading model')
-            # optional checkpoint loading is handled by load_state_dict_checkpoint elsewhere
+        if test:
+            checkpoint_path = os.path.join(self.args.checkpoints, setting, 'checkpoint.pth')
+            if not os.path.exists(checkpoint_path):
+                candidates = []
+                if os.path.isdir(self.args.checkpoints):
+                    model_id = getattr(self.args, 'model_id', '')
+                    for name in sorted(os.listdir(self.args.checkpoints)):
+                        if model_id and model_id in name:
+                            candidates.append(name)
+                    if not candidates:
+                        pred_tag = 'pl{}'.format(self.args.pred_len)
+                        for name in sorted(os.listdir(self.args.checkpoints)):
+                            if pred_tag in name and self.args.model in name:
+                                candidates.append(name)
+                candidate_text = '\n'.join(candidates[:20]) if candidates else '<none>'
+                raise FileNotFoundError(
+                    'Checkpoint not found for CALF evaluation.\n'
+                    'setting: {}\n'
+                    'expected: {}\n'
+                    'checkpoints root: {}\n'
+                    'model_id: {}\n'
+                    'seq_len: {}, pred_len: {}\n'
+                    'nearby candidates:\n{}'.format(
+                        setting,
+                        checkpoint_path,
+                        self.args.checkpoints,
+                        self.args.model_id,
+                        self.args.seq_len,
+                        self.args.pred_len,
+                        candidate_text))
+            print('loading model: {}'.format(checkpoint_path))
+            try:
+                self.model.load_state_dict(load_state_dict_checkpoint(checkpoint_path, map_location=self.device))
+            except RuntimeError as exc:
+                raise RuntimeError(
+                    'Failed to load CALF checkpoint.\n'
+                    'setting: {}\n'
+                    'checkpoint: {}\n'
+                    'model_id: {}\n'
+                    'seq_len: {}, pred_len: {}'.format(
+                        setting,
+                        checkpoint_path,
+                        self.args.model_id,
+                        self.args.seq_len,
+                        self.args.pred_len)) from exc
         preds = []
         trues = []
         self.model.eval()
@@ -205,6 +247,9 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                 preds.append(pred)
                 trues.append(true)
 
+        if not preds:
+            raise RuntimeError('No test batches produced for setting: {}'.format(setting))
+
         preds = np.array(preds)
         trues = np.array(trues)
         print('test shape1:', preds.shape, trues.shape)
@@ -213,21 +258,43 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         print('test shape2:', preds.shape, trues.shape)
         
         # # result save
-        # save_dir_name = log_fine_name.split('.')[0]
-        # folder_path = './results/' + save_dir_name + '/'
-        # if not os.path.exists(folder_path):
-        #     os.makedirs(folder_path)
+        if test:
+            save_ii = 0 if ii == -1 else ii
+            result_root = os.path.join('./results', setting)
+            run_name = 'eval_{}_itr{}'.format(time.strftime('%Y%m%d_%H%M%S'), save_ii)
+            folder_path = os.path.join(result_root, run_name)
+            suffix = 1
+            while os.path.exists(folder_path):
+                folder_path = os.path.join(result_root, '{}_{}'.format(run_name, suffix))
+                suffix += 1
+            if not os.path.exists(folder_path):
+                os.makedirs(folder_path)
         
         mae, mse, rmse, mape, mspe = metric(preds, trues)
         print('mse:{}, mae:{}'.format(mse, mae))
-        # f = open(folder_path + log_fine_name, 'a')
-        # f.write('mse:{}, mae:{}'.format(mse, mae))
-        # f.write('\n')
-        # f.close()
+        if test and log_fine_name:
+            f = open(os.path.join(folder_path, log_fine_name), 'a')
+            f.write(setting + '\n')
+            f.write('mse:{}, mae:{}'.format(mse, mae))
+            f.write('\n')
+            f.close()
         
-        # np.save(folder_path + f'metrics_{ii}.npy', np.array([mae, mse, rmse, mape, mspe]))
-        # np.save(folder_path + f'pred_{ii}.npy', preds)
-        # np.save(folder_path + f'true_{ii}.npy', trues)
+        if test:
+            np.save(os.path.join(folder_path, f'metrics_{save_ii}.npy'), np.array([mae, mse, rmse, mape, mspe]))
+            np.save(os.path.join(folder_path, f'pred_{save_ii}.npy'), preds)
+            np.save(os.path.join(folder_path, f'true_{save_ii}.npy'), trues)
+            with open(os.path.join(folder_path, 'run_info.txt'), 'w') as f:
+                f.write('setting: {}\n'.format(setting))
+                f.write('model_id: {}\n'.format(self.args.model_id))
+                f.write('checkpoint: {}\n'.format(checkpoint_path if test else ''))
+                f.write('seq_len: {}\n'.format(self.args.seq_len))
+                f.write('pred_len: {}\n'.format(self.args.pred_len))
+                f.write('ii: {}\n'.format(save_ii))
+                f.write('pred_shape: {}\n'.format(preds.shape))
+                f.write('true_shape: {}\n'.format(trues.shape))
+                f.write('mse: {}\n'.format(mse))
+                f.write('mae: {}\n'.format(mae))
+            print('saved results: {}'.format(folder_path))
 
         return mae, mse
             

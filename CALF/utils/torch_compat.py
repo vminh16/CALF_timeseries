@@ -16,7 +16,14 @@ def load_numpy_torch_artifact(path, map_location=None):
         type(np.dtype("int32")),
         type(np.dtype("int64")),
     ]
-    with safe_globals([_reconstruct, np.ndarray, np.dtype, *numpy_dtype_classes]):
+    safe_numpy_globals = [
+        (_reconstruct, "numpy.core.multiarray._reconstruct"),
+        (_reconstruct, "numpy._core.multiarray._reconstruct"),
+        np.ndarray,
+        np.dtype,
+        *numpy_dtype_classes,
+    ]
+    with safe_globals(safe_numpy_globals):
         return torch.load(path, map_location=map_location, weights_only=True)
 
 
