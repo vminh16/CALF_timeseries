@@ -1,6 +1,19 @@
-# Loại bỏ thư mục chứa dữ liệu
+# Repository scope: only CALF experiments are committed.
+/OFA/
+/PAttn/
+/Time-LLM-exp/
+/pic/
 
-dataset/
+# Local datasets and CALF runtime artifacts.
+/dataset/
+/CALF/dataset/
+/CALF/checkpoints/
+/CALF/logs_btc/
+/CALF/logs_btc_eval/
+/CALF/results/
 
-
+# Python and Jupyter caches.
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
 
